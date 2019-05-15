@@ -1,0 +1,7 @@
+[package]
+name = "sudoku"
+version = "0.1.0"
+authors = ["Arvind Rao <arvind.rao@here.com>"]
+edition = "2018"
+
+[dependencies]
