@@ -1,3 +1,5 @@
+use std::io;
+use std::io::Error;
 use std::collections::HashSet;
 
 /** type alias for the sudoku number table */
@@ -148,31 +150,86 @@ fn solve_sudoku(mut game: GameGrid) -> () {
     print_board(game);
 }
 
-fn main() {
-    let games: [GameGrid; 2] = [
-        [ // easy sudoku
-            [0, 3, 0, 0, 0, 0, 6, 2, 0],
-            [9, 6, 0, 0, 0, 0, 5, 0, 0],
-            [0, 0, 0, 0, 2, 4, 0, 0, 0],
-            [8, 0, 9, 5, 0, 0, 0, 1, 0],
-            [2, 0, 0, 0, 0, 0, 0, 6, 0],
-            [7, 0, 0, 9, 8, 0, 4, 5, 0],
-            [3, 0, 8, 0, 0, 5, 9, 0, 7],
-            [0, 0, 1, 0, 4, 7, 0, 3, 0],
-            [0, 0, 5, 0, 0, 3, 1, 0, 6],
-        ],
-        [ // hard sudoku
-            [0, 8, 6, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 5, 0, 9, 2, 0],
-            [0, 0, 0, 0, 4, 0, 5, 0, 3],
-            [0, 7, 0, 0, 0, 2, 0, 1, 0],
-            [0, 0, 0, 0, 0, 3, 0, 9, 0],
-            [0, 2, 8, 0, 0, 7, 0, 0, 0],
-            [2, 0, 0, 6, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 3, 4],
-            [3, 0, 0, 1, 0, 0, 0, 0, 7],
-        ]
-    ];
+fn to_int(ch: char) -> Option<usize> {
+   match ch {
+    ' ' => Some(0),
+    '1' => Some(1),
+    '2' => Some(2),
+    '3' => Some(3),
+    '4' => Some(4),
+    '5' => Some(5),
+    '6' => Some(6),
+    '7' => Some(7),
+    '8' => Some(8),
+    '9' => Some(9),
+      _ => None,
+   }
+}
 
-    games.map(solve_sudoku);
+fn suffix(idx: usize) -> String {
+    match idx {
+        1 => "st".to_string(),
+        2 => "nd".to_string(),
+        3 => "rd".to_string(),
+        _ => "th".to_string(),
+    }
+}
+
+fn empty(game: GameGrid) -> bool {
+    for row in 0..9 { 
+        for col in 0..9 {
+            if game[row][col] > 0 {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+fn read() -> io::Result<GameGrid> {
+    let stdin = io::stdin(); // We get `Stdin` here.
+    let mut buffer = String::new();
+
+    let mut game: GameGrid =
+        [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ];
+    
+    // parse one row at a time
+    for idx in 0..9 {
+        println!("Enter the {}{} row of numbers. Spacebar/(' ') for empty cells", idx+1, suffix(idx+1));
+        stdin.read_line(&mut buffer)?;
+        let mut idy = 0;
+        for cell in buffer.chars() {
+            if let Some(v) = to_int(cell) {
+                game[idx][idy] = v;
+                idy+=1;
+            }
+        }
+        buffer.clear();
+    }
+    /* special exception for a sudoku board without any inital 
+     *  conditions.
+     */
+    let empty_game = Error::other("Empty Game Board !!");
+
+    if empty(game) {
+        return Err(empty_game);
+    }
+    return Ok(game);
+}
+
+fn main() {
+    match read() {
+        Ok(game) => solve_sudoku(game),
+        Err(e)   => println!("error parsing user input: {}", e),
+    }
 }
