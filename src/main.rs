@@ -1,5 +1,8 @@
+extern crate colored;
+
 use std::io;
 use std::io::Error;
+use colored::Colorize;
 use std::collections::HashSet;
 
 /** type alias for the sudoku number table */
@@ -131,7 +134,21 @@ fn is_valid_solution(game: GameGrid) -> bool {
     true
 }
 
+
 fn solve_sudoku(mut game: GameGrid) -> () {
+    // check if the game grid filled. A full grid is a proposed
+    // solution to be validated.
+    if next_empty_cell(game) == None {
+        println!("A proposed solution was provided:");
+        print_board(game);
+        if is_valid_solution(game) {
+            println!("The Proposed Solution is {} :)", "Correct".green());
+        } else {
+            println!("Sorry!! The Proposed Solution is {} :(", "Incorrect".red());
+        }
+        return;
+    }
+
     println!("The input puzzle is:");
     print_board(game);
     println!("---------------------------------");
